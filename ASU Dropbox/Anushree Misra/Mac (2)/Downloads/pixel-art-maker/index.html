@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Art Maker</title>
+    <!-- Add Google Fonts for pixel font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #D1E7DD; /* Matcha green background */
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        h1 {
+            margin-bottom: 20px;
+            color: #2D4B3E; /* Darker green for contrast */
+            font-family: 'Press Start 2P', cursive; /* Pixel font */
+            font-size: 24px;
+            text-align: center;
+            padding: 10px;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+        }
+        
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        .controls-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .controls input {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: white;
+        }
+        
+        .controls button {
+            padding: 8px 12px;
+            border-radius: 4px;
+            background-color: white; /* White buttons */
+            color: #2D4B3E; /* Dark green text */
+            border: 2px solid #2D4B3E;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Press Start 2P', cursive; /* Pixel font */
+            font-size: 10px;
+        }
+        
+        .controls button:hover {
+            background-color: #f0f0f0;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        #colorPicker {
+            height: 40px;
+            width: 60px;
+            padding: 0;
+            border: 2px solid #2D4B3E;
+        }
+        
+        .grid-container {
+            border: 3px solid #2D4B3E;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 5px;
+            max-width: 100%;
+            overflow: auto;
+            max-height: 500px;
+        }
+        
+        .pixel-grid {
+            display: grid;
+            border: 1px solid #ddd;
+        }
+        
+        .pixel {
+            background-color: white;
+            border: 1px solid #eee;
+            cursor: pointer;
+        }
+        
+        .download-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        #downloadBtn {
+            background-color: white;
+            color: #2D4B3E;
+            padding: 12px 24px;
+            font-size: 12px;
+            border: 2px solid #2D4B3E;
+            font-family: 'Press Start 2P', cursive; /* Pixel font */
+        }
+        
+        #downloadBtn:hover {
+            background-color: #f0f0f0;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .size-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .size-inputs span {
+            color: #2D4B3E;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 600) {
+            .controls-row {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .size-inputs {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 18px;
+            }
+        }
+        
+        /* Add a pixel art style container */
+        .app-container {
+            background-color: #E8F3EE;
+            border: 4px solid #2D4B3E;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <h1>PIXEL ART MAKER</h1>
+        
+        <div class="controls">
+            <div class="controls-row">
+                <div class="size-inputs">
+                    <input type="number" id="gridWidth" min="1" max="64" value="16" placeholder="Width">
+                    <span>×</span>
+                    <input type="number" id="gridHeight" min="1" max="64" value="16" placeholder="Height">
+                    <button id="createGridBtn">CREATE GRID</button>
+                </div>
+            </div>
+            
+            <div class="controls-row">
+                <input type="color" id="colorPicker" value="#000000">
+                <button id="eraserBtn">ERASER</button>
+                <button id="clearBtn">CLEAR GRID</button>
+            </div>
+        </div>
+        
+        <div class="grid-container">
+            <div id="pixelGrid" class="pixel-grid"></div>
+        </div>
+        
+        <div class="download-container">
+            <button id="downloadBtn">DOWNLOAD PIXEL ART</button>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const gridWidth = document.getElementById('gridWidth');
+            const gridHeight = document.getElementById('gridHeight');
+            const createGridBtn = document.getElementById('createGridBtn');
+            const pixelGrid = document.getElementById('pixelGrid');
+            const colorPicker = document.getElementById('colorPicker');
+            const eraserBtn = document.getElementById('eraserBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            let isDrawing = false;
+            let currentColor = colorPicker.value;
+            let isEraser = false;
+            
+            // Create initial grid
+            createGrid(16, 16);
+            
+            // Event listeners
+            createGridBtn.addEventListener('click', function() {
+                const width = parseInt(gridWidth.value) || 16;
+                const height = parseInt(gridHeight.value) || 16;
+                createGrid(width, height);
+            });
+            
+            colorPicker.addEventListener('input', function() {
+                currentColor = colorPicker.value;
+                isEraser = false;
+            });
+            
+            eraserBtn.addEventListener('click', function() {
+                isEraser = true;
+            });
+            
+            clearBtn.addEventListener('click', function() {
+                const pixels = document.querySelectorAll('.pixel');
+                pixels.forEach(pixel => {
+                    pixel.style.backgroundColor = 'white';
+                });
+            });
+            
+            downloadBtn.addEventListener('click', downloadPixelArt);
+            
+            // Mouse events for drawing
+            pixelGrid.addEventListener('mousedown', function() {
+                isDrawing = true;
+            });
+            
+            document.addEventListener('mouseup', function() {
+                isDrawing = false;
+            });
+            
+            // Functions
+            function createGrid(width, height) {
+                // Validate grid size
+                width = Math.min(Math.max(width, 1), 64);
+                height = Math.min(Math.max(height, 1), 64);
+                
+                // Update input values
+                gridWidth.value = width;
+                gridHeight.value = height;
+                
+                // Clear existing grid
+                pixelGrid.innerHTML = '';
+                
+                // Calculate pixel size based on grid dimensions
+                // For larger grids, make pixels smaller to fit in container
+                const pixelSize = width > 32 || height > 32 ? 10 : 20;
+                
+                // Set grid template
+                pixelGrid.style.gridTemplateColumns = `repeat(${width}, ${pixelSize}px)`;
+                pixelGrid.style.gridTemplateRows = `repeat(${height}, ${pixelSize}px)`;
+                
+                // Create pixels
+                for (let i = 0; i < width * height; i++) {
+                    const pixel = document.createElement('div');
+                    pixel.classList.add('pixel');
+                    pixel.style.width = `${pixelSize}px`;
+                    pixel.style.height = `${pixelSize}px`;
+                    
+                    // Drawing functionality
+                    pixel.addEventListener('mouseover', function() {
+                        if (isDrawing) {
+                            pixel.style.backgroundColor = isEraser ? 'white' : currentColor;
+                        }
+                    });
+                    
+                    pixel.addEventListener('mousedown', function() {
+                        pixel.style.backgroundColor = isEraser ? 'white' : currentColor;
+                    });
+                    
+                    pixelGrid.appendChild(pixel);
+                }
+            }
+            
+            function downloadPixelArt() {
+                // Create a canvas element
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Get grid dimensions
+                const width = parseInt(gridWidth.value);
+                const height = parseInt(gridHeight.value);
+                
+                // Calculate pixel size based on grid dimensions
+                const pixelSize = width > 32 || height > 32 ? 10 : 20;
+                
+                // Set canvas size
+                canvas.width = width * pixelSize;
+                canvas.height = height * pixelSize;
+                
+                // Draw pixels to canvas
+                const pixels = document.querySelectorAll('.pixel');
+                pixels.forEach((pixel, index) => {
+                    const x = (index % width) * pixelSize;
+                    const y = Math.floor(index / width) * pixelSize;
+                    
+                    ctx.fillStyle = pixel.style.backgroundColor || 'white';
+                    ctx.fillRect(x, y, pixelSize, pixelSize);
+                });
+                
+                // Create download link
+                const link = document.createElement('a');
+                link.download = 'pixel-art.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }
+            
+            // Touch support for mobile devices
+            pixelGrid.addEventListener('touchstart', function(e) {
+                isDrawing = true;
+                handleTouch(e);
+                e.preventDefault();
+            });
+            
+            pixelGrid.addEventListener('touchmove', function(e) {
+                if (isDrawing) {
+                    handleTouch(e);
+                }
+                e.preventDefault();
+            });
+            
+            pixelGrid.addEventListener('touchend', function() {
+                isDrawing = false;
+            });
+            
+            function handleTouch(e) {
+                const touch = e.touches[0];
+                const pixel = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (pixel && pixel.classList.contains('pixel')) {
+                    pixel.style.backgroundColor = isEraser ? 'white' : currentColor;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
